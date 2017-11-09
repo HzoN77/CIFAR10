@@ -28,7 +28,7 @@ def transform_CIFAR(cifar_file):
 # Hyper params
 batch_size = 128
 num_classes = 10
-epochs = 1
+epochs = 50
 CIFAR_input_size = (32, 32, 3)
 
 
@@ -38,12 +38,11 @@ X1, y1 = transform_CIFAR(unpickle(cifar_path + 'data_batch_1'))
 X2, y2 = transform_CIFAR(unpickle(cifar_path + 'data_batch_2'))
 X3, y3 = transform_CIFAR(unpickle(cifar_path + 'data_batch_3'))
 X4, y4 = transform_CIFAR(unpickle(cifar_path + 'data_batch_4'))
-X5, y5 = transform_CIFAR(unpickle(cifar_path + 'data_batch_5'))
+X_val, y_val = transform_CIFAR(unpickle(cifar_path + 'data_batch_5'))
 
 X_test, y_test = transform_CIFAR(unpickle(cifar_path + 'test_batch'))
-
-X = X1 + X2 + X3 + X4 + X5
-y = y1 + y2 + y3 + y4 + y5
+X = X1 + X2 + X3 + X4
+y = y1 + y2 + y3 + y4
 
 # Convert data to 0-1 floats, and to categorical.
 X = np.array(X).astype('float32')
@@ -53,6 +52,10 @@ y = keras.utils.to_categorical(y, num_classes=num_classes)
 X_test = np.array(X_test).astype('float32')
 X_test /= 255
 y_test = keras.utils.to_categorical(y_test, num_classes=num_classes)
+
+X_val = np.array(X_val).astype('float32')
+X_val /= 255
+y_val = keras.utils.to_categorical(y_val, num_classes=num_classes)
 
 
 # Create a test model.
@@ -75,7 +78,8 @@ model.compile(loss=keras.losses.categorical_crossentropy,
               metrics=['accuracy'])
 
 
-model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs)
+model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=(X_val, y_val))
+
 
 
 # import matplotlib.pyplot as plt
@@ -83,5 +87,6 @@ model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs)
 # plt.show()
 
 score = model.evaluate(X_test, y_test, verbose=1)
+print('')
 print("Test loss:", score[0])
 print("Test accuracy:", score[1])
