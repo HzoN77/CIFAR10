@@ -7,7 +7,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from keras import backend as K
-
+import matplotlib.pyplot as plt
 
 
 def unpickle(file):
@@ -23,6 +23,23 @@ def transform_CIFAR(cifar_file):
     y = y_label
 
     return X, y
+
+
+def view_test_data(X_data, y_data):
+    import random
+    ncols = 10
+    nrows = 5
+    idx = random.sample(range(1, 9999), ncols*nrows)
+    y_pred = model.predict(X_data[idx])
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols)
+    ctr = 0
+    for ax in axes.flatten():
+        im = ax.imshow(X_data[idx[ctr]])
+        ax.xaxis.set_visible(False)
+        ax.yaxis.set_visible(False)
+        ax.set_title('Pred:' + str(np.argmax(y_pred[ctr])) + ' True:' + str(np.argmax(y_data[idx[ctr]])))
+        ctr += 1
+    fig.show()
 
 
 # Hyper params
@@ -45,9 +62,9 @@ X = X1 + X2 + X3 + X4
 y = y1 + y2 + y3 + y4
 
 # Convert data to 0-1 floats, and to categorical.
-X = np.array(X).astype('float32')
+X = np.array(X1).astype('float32')
 X /= 255
-y = keras.utils.to_categorical(y, num_classes=num_classes)
+y = keras.utils.to_categorical(y1, num_classes=num_classes)
 
 X_test = np.array(X_test).astype('float32')
 X_test /= 255
@@ -82,11 +99,9 @@ model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=
 
 
 
-# import matplotlib.pyplot as plt
-# plt.imshow(np.swapaxes(np.reshape(first_file[b'data'][40], (32,32,3), order='F'), 0, 1))
-# plt.show()
-
 score = model.evaluate(X_test, y_test, verbose=1)
 print('')
 print("Test loss:", score[0])
 print("Test accuracy:", score[1])
+
+view_test_data(X_test, y_test)
