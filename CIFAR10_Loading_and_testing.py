@@ -45,7 +45,7 @@ def view_test_data(X_data, y_data):
 # Hyper params
 batch_size = 128
 num_classes = 10
-epochs = 50
+epochs = 1
 CIFAR_input_size = (32, 32, 3)
 
 
