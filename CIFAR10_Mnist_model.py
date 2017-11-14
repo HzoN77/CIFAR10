@@ -10,17 +10,21 @@ from keras import backend as K
 import matplotlib.pyplot as plt
 
 
-def unpickle(file):
+
+def load_in_CIFAR(file, full_dict=False):
     import pickle
     with open(file, 'rb') as fo:
         dict = pickle.load(fo, encoding='bytes')
-    return dict
 
-def transform_CIFAR(cifar_file):
-    y_label = cifar_file[b'labels']
-    X_flat = cifar_file[b'data']
+    # Transform the images to correct RGB-representation.
+    y_label = dict[b'labels']
+    X_flat = dict[b'data']
     X = [np.swapaxes(np.reshape(x, CIFAR_input_size, order='F'), 0, 1) for x in X_flat]
     y = y_label
+
+    # Optional outputs the full dict. Additional info in the dict.
+    if full_dict == True:
+        return X, y, dict
 
     return X, y
 
@@ -30,16 +34,18 @@ def view_test_data(X_data, y_data):
     ncols = 10
     nrows = 5
     idx = random.sample(range(1, 9999), ncols*nrows)
-    y_pred = model.predict(X_data[idx])
+    X = X_data[idx]
+    y = y_data[idx]
+    y_pred = model.predict(X)
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols)
     ctr = 0
     for ax in axes.flatten():
-        im = ax.imshow(X_data[idx[ctr]])
+        im = ax.imshow(X[ctr])
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
-        ax.set_title('Pred:' + str(np.argmax(y_pred[ctr])) + ' True:' + str(np.argmax(y_data[idx[ctr]])))
+        ax.set_title('Pred:' + str(np.argmax(y_pred[ctr])) + ' True:' + str(np.argmax(y_data[idx])))
         ctr += 1
-    fig.show()
+    return fig
 
 
 # Hyper params
@@ -51,13 +57,13 @@ CIFAR_input_size = (32, 32, 3)
 
 # Read in the CIFAR data
 cifar_path = './cifar-10-batches-py/'
-X1, y1 = transform_CIFAR(unpickle(cifar_path + 'data_batch_1'))
-X2, y2 = transform_CIFAR(unpickle(cifar_path + 'data_batch_2'))
-X3, y3 = transform_CIFAR(unpickle(cifar_path + 'data_batch_3'))
-X4, y4 = transform_CIFAR(unpickle(cifar_path + 'data_batch_4'))
-X_val, y_val = transform_CIFAR(unpickle(cifar_path + 'data_batch_5'))
+X1, y1 = load_in_CIFAR(cifar_path + 'data_batch_1')
+X2, y2 = load_in_CIFAR(cifar_path + 'data_batch_2')
+X3, y3 = load_in_CIFAR(cifar_path + 'data_batch_3')
+X4, y4 = load_in_CIFAR(cifar_path + 'data_batch_4')
+X_val, y_val = load_in_CIFAR(cifar_path + 'data_batch_5')
 
-X_test, y_test = transform_CIFAR(unpickle(cifar_path + 'test_batch'))
+X_test, y_test, dict = load_in_CIFAR(cifar_path + 'test_batch', full_dict=True)
 X = X1 + X2 + X3 + X4
 y = y1 + y2 + y3 + y4
 
@@ -95,7 +101,7 @@ model.compile(loss=keras.losses.categorical_crossentropy,
               metrics=['accuracy'])
 
 
-model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=(X_val, y_val))
+#model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=(X_val, y_val))
 
 
 
@@ -104,4 +110,6 @@ print('')
 print("Test loss:", score[0])
 print("Test accuracy:", score[1])
 
-view_test_data(X_test, y_test)
+fig = view_test_data(X_test, y_test)
+plt.show()
+
