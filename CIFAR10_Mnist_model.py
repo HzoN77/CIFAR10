@@ -51,7 +51,7 @@ def view_test_data(X_data, y_data):
 # Hyper params
 batch_size = 128
 num_classes = 10
-epochs = 1
+epochs = 30
 CIFAR_input_size = (32, 32, 3)
 
 
@@ -68,9 +68,9 @@ X = X1 + X2 + X3 + X4
 y = y1 + y2 + y3 + y4
 
 # Convert data to 0-1 floats, and to categorical.
-X = np.array(X1).astype('float32')
+X = np.array(X).astype('float32')
 X /= 255
-y = keras.utils.to_categorical(y1, num_classes=num_classes)
+y = keras.utils.to_categorical(y, num_classes=num_classes)
 
 X_test = np.array(X_test).astype('float32')
 X_test /= 255
@@ -101,9 +101,7 @@ model.compile(loss=keras.losses.categorical_crossentropy,
               metrics=['accuracy'])
 
 
-#model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=(X_val, y_val))
-
-
+history = model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=(X_val, y_val))
 
 score = model.evaluate(X_test, y_test, verbose=1)
 print('')
@@ -111,5 +109,27 @@ print("Test loss:", score[0])
 print("Test accuracy:", score[1])
 
 fig = view_test_data(X_test, y_test)
+
+print(history.history.keys())
+# summarize history for accuracy
+
+plt.figure()
+
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+
+# summarize history for loss
+plt.figure()
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+
 plt.show()
 
