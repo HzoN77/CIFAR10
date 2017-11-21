@@ -6,10 +6,54 @@ import numpy as np
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+from keras.layers import BatchNormalization
 from keras import backend as K
 import matplotlib.pyplot as plt
 
 from CIFAR_help_functions import *
+
+
+def AlexNet(network_input_shape=(224, 224, 3), num_classes=None):
+    alexnet = Sequential()
+    # Conv 1
+
+    alexnet.add(Conv2D(input_shape=network_input_shape, filters=96, kernel_size=(11, 11), strides=(4, 4), padding='valid', activation='relu'))
+    alexnet.add(BatchNormalization())
+    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # Conv 2
+    alexnet.add(Conv2D(256, kernel_size=(5, 5), strides=(1, 1), padding='valid', activation='relu'))
+    alexnet.add(BatchNormalization())
+    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # COnv 3
+    alexnet.add(Conv2D(384, kernel_size=(3, 3), strides=(1, 1), padding='valid', activation='relu'))
+
+    # Conv 4
+    alexnet.add(Conv2D(384, kernel_size=(3, 3), strides=(1, 1), padding='valid', activation='relu'))
+
+    # Conv 5'th layer.
+    alexnet.add(Conv2D(256, kernel_size=(3, 3), strides=(1, 1), padding='valid', activation='relu'))
+    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # 6th layer: Flatten and fully connected
+    alexnet.add(Flatten())
+    alexnet.add(Dense(4096, activation='relu'))
+    alexnet.add(Dropout(0.5))
+
+    # 7th layer- Dense
+    alexnet.add(Dense(4096, activation='relu'))
+    alexnet.add(Dropout(0.5))
+
+    # 8th layer: Output layer
+    alexnet.add(Dense(num_classes, activation='softmax'))
+
+    alexnet.compile(loss=keras.losses.categorical_crossentropy,
+                    optimizer=keras.optimizers.Adadelta(),
+                    metrics=['accuracy'])
+
+    return alexnet
+
 
 
 # Hyper params
@@ -79,40 +123,25 @@ model.summary()
 
 # Compile mdoel
 
+model = AlexNet(num_classes=num_classes)
+
 model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
+model.summary()
 
-history = model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=(X_val, y_val))
+# #model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=(X_val, y_val))
+#
+#
+#
+# #score = model.evaluate(X_test, y_test, verbose=1)
+# #print('')
+# #print("Test loss:", score[0])
+# #print("Test accuracy:", score[1])
+#
+# fig = view_test_data(X_test, y_test)
+# plt.show()
 
-score = model.evaluate(X_test, y_test, verbose=1)
 
-print('')
-print("Test loss:", score[0])
-print("Test accuracy:", score[1])
 
-fig = view_test_data(X_test, y_test, model)
-
-print(history.history.keys())
-# summarize history for accuracy
-
-plt.figure()
-
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-
-# summarize history for loss
-plt.figure()
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-
-plt.show()
