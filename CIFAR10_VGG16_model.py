@@ -11,48 +11,8 @@ from keras import backend as K
 import matplotlib.pyplot as plt
 
 from CIFAR_help_functions import *
+from cracked_baffoon import *
 
-
-def AlexNet(network_input_shape=(224, 224, 3), num_classes=None):
-    alexnet = Sequential()
-    # Conv 1
-
-    alexnet.add(Conv2D(input_shape=network_input_shape, filters=96, kernel_size=(11, 11), strides=(4, 4), padding='valid', activation='relu'))
-    alexnet.add(BatchNormalization())
-    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # Conv 2
-    alexnet.add(Conv2D(256, kernel_size=(5, 5), strides=(1, 1), padding='valid', activation='relu'))
-    alexnet.add(BatchNormalization())
-    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # COnv 3
-    alexnet.add(Conv2D(384, kernel_size=(3, 3), strides=(1, 1), padding='valid', activation='relu'))
-
-    # Conv 4
-    alexnet.add(Conv2D(384, kernel_size=(3, 3), strides=(1, 1), padding='valid', activation='relu'))
-
-    # Conv 5'th layer.
-    alexnet.add(Conv2D(256, kernel_size=(3, 3), strides=(1, 1), padding='valid', activation='relu'))
-    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # 6th layer: Flatten and fully connected
-    alexnet.add(Flatten())
-    alexnet.add(Dense(4096, activation='relu'))
-    alexnet.add(Dropout(0.5))
-
-    # 7th layer- Dense
-    alexnet.add(Dense(4096, activation='relu'))
-    alexnet.add(Dropout(0.5))
-
-    # 8th layer: Output layer
-    alexnet.add(Dense(num_classes, activation='softmax'))
-
-    alexnet.compile(loss=keras.losses.categorical_crossentropy,
-                    optimizer=keras.optimizers.Adadelta(),
-                    metrics=['accuracy'])
-
-    return alexnet
 
 
 
@@ -91,39 +51,14 @@ y_val = keras.utils.to_categorical(y_val, num_classes=num_classes)
 
 # Create a test model.
 
-model = Sequential([
-    # Block 1: In 32x32, out 16x16.
-    Conv2D(64, (3, 3), input_shape=CIFAR_input_size, padding='same', activation='relu'),
-    Conv2D(64, (3, 3), activation='relu', padding='same'),
-    Dropout(0.5),
-    Conv2D(64, (3, 3), activation='relu', padding='same'),
-    MaxPooling2D(pool_size=(2, 2), strides=(2, 2)),
-    # Block 2: In 16x16, out 8x8.
-    Conv2D(128, (3, 3), activation='relu', padding='same'),
-    Conv2D(128, (3, 3), activation='relu', padding='same'),
-    Dropout(0.5),
-    Conv2D(128, (3, 3), activation='relu', padding='same'),
-    MaxPooling2D(pool_size=(2, 2), strides=(2, 2)),
-    # Block 3: in 8x8, out 4x4
-    Conv2D(256, (3, 3), activation='relu', padding='same'),
-    Conv2D(256, (3, 3), activation='relu', padding='same'),
-    Dropout(0.5),
-    Conv2D(512, (3, 3), activation='relu', padding='same'),
-    Conv2D(512, (3, 3), activation='relu', padding='same'),
-    MaxPooling2D(pool_size=(2, 2), strides=(2, 2)),
-    # Flatten, and Dense layers for output.
-    Flatten(),
-    Dense(4096, activation='relu'),
-    Dropout(0.5),
-    Dense(4096, activation='relu'),
-    Dense(num_classes, activation='softmax')
-])
+fourier_test(cv2.cvtColor(X[45], cv2.COLOR_RGB2GRAY), 0.01, 0.02)
 
-model.summary()
+vggModel = create_fake_VGG16(CIFAR_input_size, num_classes)
+vggModel.summary()
 
-# Compile mdoel
+# Compile model
 
-model = AlexNet(num_classes=num_classes)
+model = create_AlexNet(num_classes=num_classes)
 
 model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),

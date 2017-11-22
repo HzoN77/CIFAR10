@@ -87,10 +87,10 @@ def bandpass(data, highpass, lowpass, n, pxd, eq='histogram'):
     return new_image
 
 
-def test():
+def fourier_test(img, lpf, hpf):
     """Test the filters."""
     #   orig_image = misc.face(gray=True)
-    orig_image = cv2.imread('messi.jpg', 0)
+    orig_image = img
     #    orig_image = mpimg.imread('NW066.jpg')[:,:,0] #comment to use stock image
     #    orig_image = np.random.random_sample((1000,1000)) #use noise instead
     fft_orig = np.fft.fftshift(np.fft.fft2(orig_image))
@@ -112,7 +112,7 @@ def test():
     plt.gray()
     plt.axis('off')
 
-    filt = butter2d_lp(orig_image.shape, 0.4, 2, pxd=43)
+    filt = butter2d_lp(orig_image.shape, lpf, 2, pxd=43)
 
     fft_new = fft_orig * filt
     new_image = np.abs(np.fft.ifft2(np.fft.ifftshift(fft_new)))
@@ -134,7 +134,7 @@ def test():
     plt.gray()
     plt.axis('off')
 
-    filt = butter2d_hp(orig_image.shape, 0.8, 2, pxd=43)
+    filt = butter2d_hp(orig_image.shape, hpf, 2, pxd=43)
     fft_new = fft_orig * filt
     new_image = np.abs(np.fft.ifft2(np.fft.ifftshift(fft_new)))
     new_image = exposure.equalize_hist(new_image)
@@ -180,4 +180,4 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    fourier_test()
