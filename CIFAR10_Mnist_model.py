@@ -14,7 +14,7 @@ from CIFAR_help_functions import *
 # Hyper params
 batch_size = 128
 num_classes = 10
-epochs = 15
+epochs = 1
 CIFAR_input_size = (32, 32, 3)
 
 
@@ -78,6 +78,7 @@ print(history.history.keys())
 
 plt.figure()
 
+plt.subplot(211)
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
@@ -85,6 +86,7 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 
+plt.subplot(212)
 # summarize history for loss
 plt.figure()
 plt.plot(history.history['loss'])
