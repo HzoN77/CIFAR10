@@ -1,16 +1,26 @@
+import matplotlib.pyplot as plt
+
+# Jens specific, decide which GPU.
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
+
 import numpy as np
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from keras import backend as K
-import matplotlib.pyplot as plt
+
+
+import butter_filters
+
 import cv2
 from CIFAR_help_functions import *
 
 # Hyper params
-batch_size = 128
+batch_size = 256
 num_classes = 10
-epochs = 1
+epochs = 30
 CIFAR_input_size = (32, 32, 1)
 
 # Read in the CIFAR data
@@ -27,9 +37,9 @@ y = y1 + y2 + y3 + y4
 
 
 # Convert data to 0-1 floats, and to categorical.
-X = np.array(X1).astype('float32')
+X = np.array(X).astype('float32')
 X /= 255
-y = keras.utils.to_categorical(y1, num_classes=num_classes)
+y = keras.utils.to_categorical(y, num_classes=num_classes)
 
 X_test = np.array(X_test).astype('float32')
 X_test /= 255
@@ -47,13 +57,15 @@ X_val = [cv2.cvtColor(x, cv2.COLOR_RGB2GRAY) for x  in X_val]
 # Doing a full 101 laps with 0, 0.01, 0.02 ... 1.0
 test_case_name = 'CIFAR_brute_force_test_LP'
 f = np.linspace(0.001, 0.3, num=100)
-progress_file = open(test_case_name + '/results.txt', 'w')
+
+# progress_file = open(test_case_name + '/results.txt', 'w')
+
 for i in range(len(f)):
     ## Manipulate data
-    lp_filter = filters.butter2d_hp(size=(32, 32), cutoff=0.11, n=10)
-    X_gray = filter_data(X, lp_filter)
-    X_test_gray = filter_data(X_test, lp_filter)
-    X_val_gray = filter_data(X_val, lp_filter)
+    lp_filter = butter_filters.butter2d_hp(shape=(32, 32), f=f[i], n=10)
+    X_gray = butter_filters.filter_data(X, lp_filter)
+    X_test_gray = butter_filters.filter_data(X_test, lp_filter)
+    X_val_gray = butter_filters.filter_data(X_val, lp_filter)
 
     X_gray = np.expand_dims(X_gray, axis=-1)
     X_test_gray = np.expand_dims(X_test_gray, axis=-1)
@@ -79,7 +91,6 @@ for i in range(len(f)):
 
     plt.subplot(212)
     # summarize history for loss
-    plt.figure()
     plt.plot(hist.history['loss'])
     plt.plot(hist.history['val_loss'])
     plt.title('model loss')
@@ -88,6 +99,10 @@ for i in range(len(f)):
     plt.legend(['train', 'test'], loc='upper left')
     plt.savefig(fullname + '.png')
 
-    progress_file.write("Run:" + str(i) + "; Freq:" + str(f[i]) + "; results:" + '; '.join([str(x) for x in score]) + '\n')
+    K.clear_session()
+    with open(test_case_name + '/results.txt', 'a') as prog_file:
+        prog_file.write("Run:" + str(i) + "; Freq:" + str(f[i]) + "; results:" + '; '.join([str(x) for x in score]) + "\n")
 
+
+print("Finishing...")
 progress_file.close()

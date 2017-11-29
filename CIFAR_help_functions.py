@@ -1,5 +1,3 @@
-from psychopy import visual
-from psychopy.visual import filters
 
 import random
 import pickle
@@ -118,9 +116,4 @@ def create_fake_VGG16(CIFAR_input_size, num_classes):
     return model
 
 
-def filter_data(X, filter):
-    R = []
-    for x in X:
-        R.append(np.abs(np.fft.ifft2(np.multiply(np.fft.fftshift(np.fft.fft2(x)), filter))))
 
-    return R

@@ -8,7 +8,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from keras.layers import BatchNormalization
 from keras import backend as K
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from CIFAR_help_functions import *
 from cracked_baffoon import *
@@ -51,10 +51,10 @@ y_val = keras.utils.to_categorical(y_val, num_classes=num_classes)
 
 # Create a test model.
 
-fourier_test(cv2.cvtColor(X[45], cv2.COLOR_RGB2GRAY), 0.01, 0.02)
+#fourier_test(cv2.cvtColor(X[45], cv2.COLOR_RGB2GRAY), 0.01, 0.02)
 
 vggModel = create_fake_VGG16(CIFAR_input_size, num_classes)
-vggModel.summary()
+#vggModel.summary()
 
 # Compile model
 
@@ -64,7 +64,14 @@ model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
-model.summary()
+#model.summary()
+
+
+from keras.applications import resnet50
+
+
+resnet = resnet50.ResNet50()
+resnet.summary()
 
 # #model.fit(np.array(X), y, batch_size=batch_size, epochs=epochs, validation_data=(X_val, y_val))
 #

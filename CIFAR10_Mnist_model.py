@@ -14,7 +14,7 @@ from CIFAR_help_functions import *
 # Hyper params
 batch_size = 128
 num_classes = 10
-epochs = 1
+epochs = 10
 CIFAR_input_size = (32, 32, 3)
 
 
