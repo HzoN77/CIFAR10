@@ -18,7 +18,7 @@ import cv2
 from CIFAR_help_functions import *
 
 # Hyper params
-batch_size = 256
+batch_size = 128
 num_classes = 10
 epochs = 30
 CIFAR_input_size = (32, 32, 1)
@@ -55,14 +55,14 @@ X_test = [cv2.cvtColor(x, cv2.COLOR_RGB2GRAY) for x  in X_test]
 X_val = [cv2.cvtColor(x, cv2.COLOR_RGB2GRAY) for x  in X_val]
 
 # Doing a full 101 laps with 0, 0.01, 0.02 ... 1.0
-test_case_name = 'CIFAR_brute_force_test_LP'
-f = np.linspace(0.001, 0.3, num=100)
+test_case_name = 'CIFAR_brute_force_test_LP_2'
+f = np.linspace(0.001, 1.0, num=200)
 
 # progress_file = open(test_case_name + '/results.txt', 'w')
 
-for i in range(len(f)):
+for idx in range(len(f)):
     ## Manipulate data
-    lp_filter = butter_filters.butter2d_hp(shape=(32, 32), f=f[i], n=10)
+    lp_filter = butter_filters.butter2d_lp(shape=(32, 32), f=f[idx], n=10)
     X_gray = butter_filters.filter_data(X, lp_filter)
     X_test_gray = butter_filters.filter_data(X_test, lp_filter)
     X_val_gray = butter_filters.filter_data(X_val, lp_filter)
@@ -79,7 +79,7 @@ for i in range(len(f)):
     score = alexnet.evaluate(X_test_gray, y_test)
 
     ## Save results
-    fullname = test_case_name + "/LP-Freq_" + str(f[i])
+    fullname = test_case_name + "/LP_Test_" + str(idx) + "_Freq_" + str(f[idx])
     plt.clf()
     plt.subplot(211)
     plt.plot(hist.history['acc'])
@@ -97,12 +97,11 @@ for i in range(len(f)):
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    plt.savefig(fullname + '.png')
+    plt.savefig(fullname + '.pdf', format='pdf', dpi=1200)
 
-    K.clear_session()
+    K.clear_session() # Clears GPU memory
     with open(test_case_name + '/results.txt', 'a') as prog_file:
-        prog_file.write("Run:" + str(i) + "; Freq:" + str(f[i]) + "; results:" + '; '.join([str(x) for x in score]) + "\n")
+        prog_file.write("Run:" + str(idx) + "; Freq:" + str(f[idx]) + "; results:" + '; '.join([str(x) for x in score]) + "\n")
 
 
 print("Finishing...")
-progress_file.close()
