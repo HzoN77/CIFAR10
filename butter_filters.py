@@ -61,10 +61,10 @@ def ideal2d_bp(shape, cutin, cutoff, pxd=1):
     return ideal2d_lp(shape, cutoff, pxd) - ideal2d_lp(shape, cutin, pxd)
 
 
-def ideal2d_hp(shape, f, n, pxd=1):
+def ideal2d_hp(shape, f, pxd=1):
     """Designs an ideal filter with cutin frequency f. pxd defines the number
    of pixels per unit of frequency (e.g., degrees of visual angle)."""
-    return 1. - ideal2d_lp(shape, f, n, pxd)
+    return 1. - ideal2d_lp(shape, f, pxd)
 
 
 def bandpass(data, highpass, lowpass, n, pxd, eq='histogram'):
@@ -88,6 +88,13 @@ def filter_data(X, filter):
     """
     R = []
     for x in X:
-        R.append(np.abs(np.fft.ifft2(np.multiply(np.fft.fftshift(np.fft.fft2(x)), filter))))
+        R.append(np.fft.ifft2(np.fft.ifftshift(np.multiply(np.fft.fftshift(np.fft.fft2(x)), filter))))
+
+    return R
+
+def filter_data_return_magnitude(X, filter):
+    R = []
+    for x in X:
+        R.append(np.multiply(np.fft.fftshift(np.fft.fft2(x)), filter))
 
     return R

@@ -55,14 +55,14 @@ X_test = [cv2.cvtColor(x, cv2.COLOR_RGB2GRAY) for x  in X_test]
 X_val = [cv2.cvtColor(x, cv2.COLOR_RGB2GRAY) for x  in X_val]
 
 # Doing a full 101 laps with 0, 0.01, 0.02 ... 1.0
-test_case_name = 'CIFAR_brute_force_test_LP_2'
-f = np.linspace(0.001, 1.0, num=200)
+test_case_name = 'CIFAR_brute_force_test_HP_ideal'
+f = np.linspace(0.001, 1.0, num=100)
 
 # progress_file = open(test_case_name + '/results.txt', 'w')
 
 for idx in range(len(f)):
     ## Manipulate data
-    lp_filter = butter_filters.butter2d_lp(shape=(32, 32), f=f[idx], n=10)
+    lp_filter = butter_filters.ideal2d_hp(shape=(32, 32), f=f[idx])
     X_gray = butter_filters.filter_data(X, lp_filter)
     X_test_gray = butter_filters.filter_data(X_test, lp_filter)
     X_val_gray = butter_filters.filter_data(X_val, lp_filter)
@@ -75,11 +75,62 @@ for idx in range(len(f)):
     alexnet = create_AlexNet(network_input_shape=CIFAR_input_size, num_classes=num_classes)
 
     ## Train model
-    hist = alexnet.fit(X_gray, y, batch_size=batch_size, epochs=epochs, validation_data=(X_val_gray, y_val))
+    hist = alexnet.fit(X_gray, y, batch_size=batch_size, epochs=epochs, validation_data=(X_val_gray, y_val), verbose=2)
     score = alexnet.evaluate(X_test_gray, y_test)
 
     ## Save results
-    fullname = test_case_name + "/LP_Test_" + str(idx) + "_Freq_" + str(f[idx])
+    fullname = test_case_name + "/HP_Test_" + str(idx) + "_Freq_" + str(f[idx])
+    plt.clf()
+    plt.subplot(211)
+    plt.plot(hist.history['acc'])
+    plt.plot(hist.history['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+
+    plt.subplot(212)
+    # summarize history for loss
+    plt.plot(hist.history['loss'])
+    plt.plot(hist.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.savefig(fullname + '.pdf', format='pdf', dpi=1200)
+
+    K.clear_session() # Clears GPU memory
+    with open(test_case_name + '/results.txt', 'a') as prog_file:
+        prog_file.write("Run:" + str(idx) + "; Freq:" + str(f[idx]) + "; results:" + '; '.join([str(x) for x in score]) + "\n")
+
+
+
+# Doing a full 101 laps with 0, 0.01, 0.02 ... 1.0
+test_case_name = 'CIFAR_brute_force_test_LP_ideal'
+f = np.linspace(0.001, 1.0, num=100)
+
+# progress_file = open(test_case_name + '/results.txt', 'w')
+
+for idx in range(len(f)):
+    ## Manipulate data
+    lp_filter = butter_filters.ideal2d_lp(shape=(32, 32), f=f[idx])
+    X_gray = butter_filters.filter_data(X, lp_filter)
+    X_test_gray = butter_filters.filter_data(X_test, lp_filter)
+    X_val_gray = butter_filters.filter_data(X_val, lp_filter)
+
+    X_gray = np.expand_dims(X_gray, axis=-1)
+    X_test_gray = np.expand_dims(X_test_gray, axis=-1)
+    X_val_gray = np.expand_dims(X_val_gray, axis=-1)
+
+    ## Create model
+    alexnet = create_AlexNet(network_input_shape=CIFAR_input_size, num_classes=num_classes)
+
+    ## Train model
+    hist = alexnet.fit(X_gray, y, batch_size=batch_size, epochs=epochs, validation_data=(X_val_gray, y_val), verbose=2)
+    score = alexnet.evaluate(X_test_gray, y_test)
+
+    ## Save results
+    fullname = test_case_name + "/Test_" + str(idx) + "_Freq_" + str(f[idx])
     plt.clf()
     plt.subplot(211)
     plt.plot(hist.history['acc'])
